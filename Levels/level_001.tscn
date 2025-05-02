@@ -1,0 +1,233 @@
+[gd_scene load_steps=20 format=3 uid="uid://b1yleqbb8tc7x"]
+
+[ext_resource type="Material" uid="uid://d1dt1ycktn5nk" path="res://Assets/material/grid.tres" id="1_md30k"]
+[ext_resource type="Texture2D" uid="uid://cim0ihjd4x4tj" path="res://Assets/textures/grid.jpg" id="2_sva65"]
+[ext_resource type="Material" uid="uid://dl25v76ppy46a" path="res://Assets/material/box.tres" id="3_srst5"]
+[ext_resource type="PackedScene" uid="uid://c6cyn1cfrbs5c" path="res://Scenes/controllers/fps_controller.tscn" id="4_jp5i7"]
+[ext_resource type="Texture2D" uid="uid://hj14ex27dbi3" path="res://Assets/sky/autumn_field_puresky_4k (1).exr" id="5_kihus"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_gd0ev"]
+size = Vector3(20, 0.5, 20)
+
+[sub_resource type="Shader" id="Shader_cwof1"]
+code = "// NOTE: Shader automatically converted from Godot Engine 4.1.dev4's StandardMaterial3D.
+
+shader_type spatial;
+render_mode blend_mix,depth_draw_opaque,cull_back,diffuse_burley,specular_schlick_ggx;
+uniform vec4 albedo : source_color;
+uniform sampler2D texture_albedo : source_color,filter_linear_mipmap,repeat_enable;
+uniform float point_size : hint_range(0,128);
+uniform float roughness : hint_range(0,1);
+uniform sampler2D texture_metallic : hint_default_white,filter_linear_mipmap,repeat_enable;
+uniform vec4 metallic_texture_channel;
+uniform sampler2D texture_roughness : hint_roughness_r,filter_linear_mipmap,repeat_enable;
+uniform float specular;
+uniform float metallic;
+varying vec3 uv1_triplanar_pos;
+uniform float uv1_blend_sharpness;
+varying vec3 uv1_power_normal;
+uniform vec3 uv1_scale;
+uniform vec3 uv1_offset;
+uniform vec3 uv2_scale;
+uniform vec3 uv2_offset;
+
+
+void vertex() {
+	TANGENT = vec3(0.0,0.0,-1.0) * abs(NORMAL.x);
+	TANGENT+= vec3(1.0,0.0,0.0) * abs(NORMAL.y);
+	TANGENT+= vec3(1.0,0.0,0.0) * abs(NORMAL.z);
+	TANGENT = normalize(TANGENT);
+	BINORMAL = vec3(0.0,1.0,0.0) * abs(NORMAL.x);
+	BINORMAL+= vec3(0.0,0.0,-1.0) * abs(NORMAL.y);
+	BINORMAL+= vec3(0.0,1.0,0.0) * abs(NORMAL.z);
+	BINORMAL = normalize(BINORMAL);
+	uv1_power_normal=pow(abs(NORMAL),vec3(uv1_blend_sharpness));
+	uv1_triplanar_pos = VERTEX * uv1_scale + uv1_offset;
+	uv1_power_normal/=dot(uv1_power_normal,vec3(1.0));
+	uv1_triplanar_pos *= vec3(1.0,-1.0, 1.0);
+}
+
+vec4 triplanar_texture(sampler2D p_sampler,vec3 p_weights,vec3 p_triplanar_pos) {
+	vec4 samp=vec4(0.0);
+	samp+= texture(p_sampler,p_triplanar_pos.xy) * p_weights.z;
+	samp+= texture(p_sampler,p_triplanar_pos.xz) * p_weights.y;
+	samp+= texture(p_sampler,p_triplanar_pos.zy * vec2(-1.0,1.0)) * p_weights.x;
+	return samp;
+}
+
+void fragment() {
+	vec4 albedo_tex = triplanar_texture(texture_albedo,uv1_power_normal,uv1_triplanar_pos);
+	ALBEDO = (albedo.rgb * albedo_tex.r) + albedo_tex.g + albedo_tex.b;
+	float metallic_tex = dot(triplanar_texture(texture_metallic,uv1_power_normal,uv1_triplanar_pos),metallic_texture_channel);
+	METALLIC = metallic_tex * metallic;
+	vec4 roughness_texture_channel = vec4(1.0,0.0,0.0,0.0);
+	float roughness_tex = dot(triplanar_texture(texture_roughness,uv1_power_normal,uv1_triplanar_pos),roughness_texture_channel);
+	ROUGHNESS = (1.0 - albedo_tex.g) * roughness;
+	SPECULAR = specular;
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_5hbmh"]
+render_priority = 0
+shader = SubResource("Shader_cwof1")
+shader_parameter/albedo = Color(3.46541e-06, 0.491192, 0.254589, 1)
+shader_parameter/point_size = 1.0
+shader_parameter/roughness = 0.5
+shader_parameter/metallic_texture_channel = null
+shader_parameter/specular = 0.5
+shader_parameter/metallic = 0.0
+shader_parameter/uv1_blend_sharpness = 1.0
+shader_parameter/uv1_scale = Vector3(0.5, 0.5, 0.5)
+shader_parameter/uv1_offset = Vector3(0, 0, 0)
+shader_parameter/uv2_scale = Vector3(1, 1, 1)
+shader_parameter/uv2_offset = Vector3(0, 0, 0)
+shader_parameter/texture_albedo = ExtResource("2_sva65")
+shader_parameter/texture_roughness = ExtResource("2_sva65")
+
+[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_oahyi"]
+data = PackedVector3Array(-10, 0.25, 10, 10, 0.25, 10, -10, -0.25, 10, 10, 0.25, 10, 10, -0.25, 10, -10, -0.25, 10, 10, 0.25, -10, -10, 0.25, -10, 10, -0.25, -10, -10, 0.25, -10, -10, -0.25, -10, 10, -0.25, -10, 10, 0.25, 10, 10, 0.25, -10, 10, -0.25, 10, 10, 0.25, -10, 10, -0.25, -10, 10, -0.25, 10, -10, 0.25, -10, -10, 0.25, 10, -10, -0.25, -10, -10, 0.25, 10, -10, -0.25, 10, -10, -0.25, -10, 10, 0.25, 10, -10, 0.25, 10, 10, 0.25, -10, -10, 0.25, 10, -10, 0.25, -10, 10, 0.25, -10, -10, -0.25, 10, 10, -0.25, 10, -10, -0.25, -10, 10, -0.25, 10, 10, -0.25, -10, -10, -0.25, -10)
+
+[sub_resource type="BoxMesh" id="BoxMesh_fjy10"]
+size = Vector3(2, 2, 2)
+
+[sub_resource type="Skin" id="Skin_n3lcl"]
+
+[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_vp4dy"]
+data = PackedVector3Array(-1, 1, 1, 1, 1, 1, -1, -1, 1, 1, 1, 1, 1, -1, 1, -1, -1, 1, 1, 1, -1, -1, 1, -1, 1, -1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1, 1, 1, 1, 1, 1, -1, 1, -1, 1, 1, 1, -1, 1, -1, -1, 1, -1, 1, -1, 1, -1, -1, 1, 1, -1, -1, -1, -1, 1, 1, -1, -1, 1, -1, -1, -1, 1, 1, 1, -1, 1, 1, 1, 1, -1, -1, 1, 1, -1, 1, -1, 1, 1, -1, -1, -1, 1, 1, -1, 1, -1, -1, -1, 1, -1, 1, 1, -1, -1, -1, -1, -1)
+
+[sub_resource type="Shader" id="Shader_2np3c"]
+code = "// NOTE: Shader automatically converted from Godot Engine 4.1.dev4's StandardMaterial3D.
+
+shader_type spatial;
+render_mode blend_mix,depth_draw_opaque,cull_back,diffuse_burley,specular_schlick_ggx;
+uniform vec4 albedo : source_color;
+uniform sampler2D texture_albedo : source_color,filter_linear_mipmap,repeat_enable;
+uniform float point_size : hint_range(0,128);
+uniform float roughness : hint_range(0,1);
+uniform sampler2D texture_metallic : hint_default_white,filter_linear_mipmap,repeat_enable;
+uniform vec4 metallic_texture_channel;
+uniform sampler2D texture_roughness : hint_roughness_r,filter_linear_mipmap,repeat_enable;
+uniform float specular;
+uniform float metallic;
+varying vec3 uv1_triplanar_pos;
+uniform float uv1_blend_sharpness;
+varying vec3 uv1_power_normal;
+uniform vec3 uv1_scale;
+uniform vec3 uv1_offset;
+uniform vec3 uv2_scale;
+uniform vec3 uv2_offset;
+
+
+void vertex() {
+	TANGENT = vec3(0.0,0.0,-1.0) * abs(NORMAL.x);
+	TANGENT+= vec3(1.0,0.0,0.0) * abs(NORMAL.y);
+	TANGENT+= vec3(1.0,0.0,0.0) * abs(NORMAL.z);
+	TANGENT = normalize(TANGENT);
+	BINORMAL = vec3(0.0,1.0,0.0) * abs(NORMAL.x);
+	BINORMAL+= vec3(0.0,0.0,-1.0) * abs(NORMAL.y);
+	BINORMAL+= vec3(0.0,1.0,0.0) * abs(NORMAL.z);
+	BINORMAL = normalize(BINORMAL);
+	uv1_power_normal=pow(abs(NORMAL),vec3(uv1_blend_sharpness));
+	uv1_triplanar_pos = VERTEX * uv1_scale + uv1_offset;
+	uv1_power_normal/=dot(uv1_power_normal,vec3(1.0));
+	uv1_triplanar_pos *= vec3(1.0,-1.0, 1.0);
+}
+
+vec4 triplanar_texture(sampler2D p_sampler,vec3 p_weights,vec3 p_triplanar_pos) {
+	vec4 samp=vec4(0.0);
+	samp+= texture(p_sampler,p_triplanar_pos.xy) * p_weights.z;
+	samp+= texture(p_sampler,p_triplanar_pos.xz) * p_weights.y;
+	samp+= texture(p_sampler,p_triplanar_pos.zy * vec2(-1.0,1.0)) * p_weights.x;
+	return samp;
+}
+
+void fragment() {
+	vec4 albedo_tex = triplanar_texture(texture_albedo,uv1_power_normal,uv1_triplanar_pos);
+	ALBEDO = (albedo.rgb * albedo_tex.r) + albedo_tex.g + albedo_tex.b;
+	float metallic_tex = dot(triplanar_texture(texture_metallic,uv1_power_normal,uv1_triplanar_pos),metallic_texture_channel);
+	METALLIC = metallic_tex * metallic;
+	vec4 roughness_texture_channel = vec4(1.0,0.0,0.0,0.0);
+	float roughness_tex = dot(triplanar_texture(texture_roughness,uv1_power_normal,uv1_triplanar_pos),roughness_texture_channel);
+	ROUGHNESS = (1.0 - albedo_tex.g) * roughness;
+	SPECULAR = specular;
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_62u37"]
+render_priority = 0
+shader = SubResource("Shader_2np3c")
+shader_parameter/albedo = Color(0, 0.67451, 0, 1)
+shader_parameter/point_size = 1.0
+shader_parameter/roughness = 0.5
+shader_parameter/metallic_texture_channel = null
+shader_parameter/specular = 0.5
+shader_parameter/metallic = 0.0
+shader_parameter/uv1_blend_sharpness = 1.0
+shader_parameter/uv1_scale = Vector3(0.5, 0.5, 0.5)
+shader_parameter/uv1_offset = Vector3(1, 0.5, 0.5)
+shader_parameter/uv2_scale = Vector3(1, 1, 1)
+shader_parameter/uv2_offset = Vector3(0, 0, 0)
+
+[sub_resource type="PrismMesh" id="PrismMesh_rutao"]
+material = SubResource("ShaderMaterial_62u37")
+left_to_right = 0.0
+size = Vector3(8, 2, 2)
+
+[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_j6kcl"]
+data = PackedVector3Array(-4, 1, 1, 4, -1, 1, -4, -1, 1, -4, 1, -1, -4, -1, -1, 4, -1, -1, -4, 1, 1, -4, 1, -1, 4, -1, 1, -4, 1, -1, 4, -1, -1, 4, -1, 1, -4, 1, -1, -4, 1, 1, -4, -1, -1, -4, 1, 1, -4, -1, 1, -4, -1, -1, -4, -1, 1, 4, -1, 1, -4, -1, -1, 4, -1, 1, 4, -1, -1, -4, -1, -1)
+
+[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_14tvt"]
+panorama = ExtResource("5_kihus")
+
+[sub_resource type="Sky" id="Sky_w1iab"]
+sky_material = SubResource("PanoramaSkyMaterial_14tvt")
+
+[sub_resource type="Environment" id="Environment_l051b"]
+background_mode = 2
+sky = SubResource("Sky_w1iab")
+
+[node name="Node3D" type="Node3D"]
+
+[node name="Floor" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.25, 0)
+material_override = ExtResource("1_md30k")
+mesh = SubResource("BoxMesh_gd0ev")
+surface_material_override/0 = SubResource("ShaderMaterial_5hbmh")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Floor"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor/StaticBody3D"]
+shape = SubResource("ConcavePolygonShape3D_oahyi")
+
+[node name="Box" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.00347, 0, 0, 0, 1.00347, 0, 0, 0, 1.00347, -1, 0.992203, -5)
+material_override = ExtResource("3_srst5")
+lod_bias = 0.001
+mesh = SubResource("BoxMesh_fjy10")
+skin = SubResource("Skin_n3lcl")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Box"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Box/StaticBody3D"]
+shape = SubResource("ConcavePolygonShape3D_vp4dy")
+
+[node name="Ramp" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 5, 0, 0)
+material_override = ExtResource("1_md30k")
+material_overlay = ExtResource("1_md30k")
+mesh = SubResource("PrismMesh_rutao")
+skeleton = NodePath("../Box")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Ramp"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ramp/StaticBody3D"]
+shape = SubResource("ConcavePolygonShape3D_j6kcl")
+
+[node name="CharacterBody3D" parent="." instance=ExtResource("4_jp5i7")]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_l051b")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.655063, 0.735783, 0.171803, -0.537818, 0.294352, 0.790005, 0.530702, -0.609902, 0.588536, 0, 0, 0)
+shadow_enabled = true
