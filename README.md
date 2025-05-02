@@ -16,6 +16,7 @@
    - Gamers who want intuitive controls for smoother gameplay
    - Anyone getting started with Godot game development
 
+![Godot-Movement-System](https://raw.githubusercontent.com/sharky-2/Godot-Movement-System/main/demo-movement.gif)
 
 <details open>
 <summary>
@@ -73,3 +74,4 @@
   - Test the key bindings to ensure smooth gameplay.
 
 </details>
+
